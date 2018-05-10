@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class Transaction {
     private UUID transactionID = UUID.randomUUID();
-    private Status status;
+    private Status status = Status.PENDING;
     private TransactionType transactionType;
 
     public void processTransaction(){

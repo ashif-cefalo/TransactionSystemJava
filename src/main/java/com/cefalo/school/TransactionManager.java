@@ -24,13 +24,13 @@ public class TransactionManager {
 
   public boolean hasPendingTransactions() {
     // This should track if there is any pending transaction request (Deposit/Withdraw/ Transfer)
-//    for (Transaction transaction : transactionList) {
-//        if(transaction.getStatus()== Status.PENDING){
-//          System.out.println("transaction id: "+transaction.getTransactionID() + " is pending");
-//          return true;
-//        }
-//    }
-    return pendingTransactionList.size() > 0;
+    for (Transaction transaction : transactionList) {
+        if(transaction.getStatus()== Status.PENDING){
+          System.out.println("transaction id: "+transaction.getTransactionID() + " is pending");
+          return true;
+        }
+    }
+    return false;
   }
 
   public void processPendingTransactions() {
