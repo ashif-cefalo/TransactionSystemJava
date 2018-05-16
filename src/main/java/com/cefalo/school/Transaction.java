@@ -2,14 +2,10 @@ package com.cefalo.school;
 
 import java.util.UUID;
 
-public class Transaction {
+public abstract class Transaction {
     private UUID transactionID = UUID.randomUUID();
     private Status status = Status.PENDING;
-    private TransactionType transactionType;
-
-    public void processTransaction(){
-
-    }
+    protected TransactionProcessor processor = new TransactionProcessor();
 
     public UUID getTransactionID() {
 
@@ -24,11 +20,7 @@ public class Transaction {
         this.status = status;
     }
 
-    public TransactionType getTransactionType() {
-        return transactionType;
-    }
+    public abstract boolean processTransaction();
 
-    public void setTransactionType(TransactionType transactionType) {
-        this.transactionType = transactionType;
-    }
+    public abstract boolean rollBackTransaction();
 }

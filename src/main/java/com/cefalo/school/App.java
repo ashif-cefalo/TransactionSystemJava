@@ -1,10 +1,15 @@
 package com.cefalo.school;
 
+import java.util.UUID;
+
 public class App {
 
     public static void main(String[] args) {
 //        depositAccountCheckBalanceAndThenWithdraw_AllTransactionsSuccessful();
-        test_WithDrawRequestForAmountGreaterThanAvailableBalance_TransactionExecutedWhenBalanceConstrainMet();
+//        test_WithDrawRequestForAmountGreaterThanAvailableBalance_TransactionExecutedWhenBalanceConstrainMet();
+//        testTransferRequestForAmountGreaterThanAvailableBalanceTransactionExecutedWhenBalanceConstrainMet();
+//        test_Transfer_ThenRollback_AccountStatusRegainedItsInitialState();
+        test_Transfer_ThenWithdrawFromTheSecondAccount_ThenRollback();
     }
 
     public static void depositAccountCheckBalanceAndThenWithdraw_AllTransactionsSuccessful() {
@@ -82,73 +87,121 @@ public class App {
     }
 
     public static void testTransferRequestForAmountGreaterThanAvailableBalanceTransactionExecutedWhenBalanceConstrainMet() {
+        TransactionManager transactionManager = new TransactionManager();
         // Create firstAccount with Initial Balance 100
+        Account fromAccount = new Account("Atiqul Alam",100);
         // Create secondAccount with Initial Balance 2000
-
+        Account toAccount = new Account("Asaduzzaman Shuvro",2000);
         // Create a transfer request of 700 from firstAccount to secondAccount
+        Transfer transfer = new Transfer(700, fromAccount, toAccount);
+        transactionManager.addTransactionRequest(transfer);
 
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
+        transactionManager.processPendingTransactions();
 
         // Balance Check : FirstAccount -> 100
+        System.out.println("fromAccount: " + fromAccount.getAccountName() + "balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 2000
+        System.out.println("toAccount: " + toAccount.getAccountName() + "balance: " + toAccount.getBalance());
+
 
         // Add a Deposit request of 900 to FirstAccount
 
+        Deposit deposit = new Deposit(900, fromAccount);
+        transactionManager.addTransactionRequest(deposit);
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
-
+        transactionManager.processPendingTransactions();
         // Balance Check : FirstAccount: 1000
-
+        System.out.println("after deposit fromAccount: " + fromAccount.getAccountName() + " balance: " + fromAccount.getBalance());
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
-
+        transactionManager.processPendingTransactions();
         // Check: there should be no pending transactions at this point
+        transactionManager.hasPendingTransactions();
+        System.out.println("has pending transaction "+transactionManager.hasPendingTransactions());
+
         // Balance Check : FirstAccount -> 300
+        System.out.println("after transaction fromAccount: " + fromAccount.getAccountName() + " balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 2700
+        System.out.println("after transaction toAccount: " + toAccount.getAccountName() + " balance: " + toAccount.getBalance());
     }
 
     public static void test_Transfer_ThenRollback_AccountStatusRegainedItsInitialState() {
+        TransactionManager transactionManager = new TransactionManager();
         // Create firstAccount with Initial Balance 2000
+        Account fromAccount = new Account("Ashif Iqbal",2000);
         // Create secondAccount with Initial Balance 100
+        Account toAccount = new Account("Atikul Alam",100);
 
         // Create a transfer request of 700 from firstAccount to secondAccount
+        Transfer transfer = new Transfer(700, fromAccount, toAccount);
+        transactionManager.addTransactionRequest(transfer);
 
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
+        transactionManager.processPendingTransactions();
 
         // Balance Check : FirstAccount -> 1300
+        System.out.println("fromAccount: " + fromAccount.getAccountName() + "balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 800
-
+        System.out.println("toAccount: " + toAccount.getAccountName() + "balance: " + toAccount.getBalance());
         // Perform a Rollback with the transaction Id of the transfer which is made
-
+        UUID transactionID = transfer.getTransactionID();
         // Check: there should be no pending transactions at this point
+        transactionManager.rollbackTransaction(transactionID);
+        transactionManager.processPendingTransactions();
+
         // Balance Check : FirstAccount -> 2000
+        System.out.println("after rollback fromAccount: " + fromAccount.getAccountName() + "balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 100
+        System.out.println("after rollback toAccount: " + toAccount.getAccountName() + "balance: " + toAccount.getBalance());
     }
 
     public static void test_Transfer_ThenWithdrawFromTheSecondAccount_ThenRollback()
     {
+        TransactionManager transactionManager = new TransactionManager();
         // Create firstAccount with Initial Balance 2000
+        Account fromAccount = new Account("Ashif Iqbal",2000);
         // Create secondAccount with Initial Balance 100
+        Account toAccount = new Account("Asaduzzaman Shuvro",100);
 
         // Create a transfer request of 700 from firstAccount to secondAccount
+        Transfer transfer = new Transfer(700, fromAccount, toAccount);
+        transactionManager.addTransactionRequest(transfer);
+        UUID transferID = transfer.getTransactionID();
+        System.out.println("transfer rollback id: " + transferID);
 
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
+        transactionManager.processPendingTransactions();
 
         // Balance Check : FirstAccount -> 1300
+        System.out.println("fromAccount: " + fromAccount.getAccountName() + " balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 800
+        System.out.println("toAccount: " + toAccount.getAccountName() + " balance: " + toAccount.getBalance());
 
         // Create a withdraw request of 600 from the secondAccount
+        Withdraw withdraw = new Withdraw(600, toAccount);
+        transactionManager.addTransactionRequest(withdraw);
+        UUID withdrawID = withdraw.getTransactionID();
+        System.out.println("withdraw rollback id: " + withdrawID);
 
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
+        transactionManager.processPendingTransactions();
 
         // Perform a Rollback with the transaction Id of the transfer which is made (Rollback should not be executed because of balance constraint)
+        transactionManager.rollbackTransaction(transferID);
+        transactionManager.processPendingTransactions();
 
         // Perform a Rollback with the transaction Id of the withdraw which was made
+        transactionManager.rollbackTransaction(withdrawID);
+        transactionManager.processPendingTransactions();
 
         // Run ProcessPendingTransactions() to process Pending TransactionRequests
 
+        transactionManager.processPendingTransactions();
+
         // Balance Check : FirstAccount -> 2000
+        System.out.println("fromAccount: " + fromAccount.getAccountName() + "balance: " + fromAccount.getBalance());
         // Balance Check : SecondAccount -> 100
-
-
+        System.out.println("toAccount: " + toAccount.getAccountName() + "balance: " + toAccount.getBalance());
     }
 
 }

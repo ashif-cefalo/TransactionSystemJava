@@ -11,21 +11,31 @@ public class Transfer extends Transaction{
         this.toAccount = toAccount;
     }
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public Account getFromAccount() {
-        return fromAccount;
-    }
-
-    public Account getToAccount() {
-        return toAccount;
+    @Override
+    public boolean processTransaction(){
+        if (processor.processTransaction(amount,fromAccount,TransactionType.WITHDRAW)){
+            processor.processTransaction(amount,toAccount, TransactionType.DEPOSIT);
+            this.setStatus(Status.COMPLETED);
+//            System.out.println("transaction succesfull: "+ this.getTransactionID()+ " " + amount+
+//                    " transferred from account: "+fromAccount.getAccountName() + " to account: " + toAccount.getAccountName());
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void processTransaction(){
-        TransferProcessor processor = new TransferProcessor();
-        processor.processTransaction(this);
+    public boolean rollBackTransaction() {
+        if (getStatus() == Status.ROLLBACK_REQUESTED){
+            if (processor.processTransaction(amount,toAccount,TransactionType.WITHDRAW)){
+                processor.processTransaction(amount,fromAccount, TransactionType.DEPOSIT);
+                this.setStatus(Status.ROLLBACKED);
+                System.out.println("transfer rollback successfull: "+ this.getTransactionID());
+                return true;
+            }
+            else{
+                System.out.println("transfer rollback not successfull: "+ this.getTransactionID());
+            }
+        }
+        return false;
     }
 }

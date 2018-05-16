@@ -2,5 +2,7 @@ package com.cefalo.school;
 
 public enum Status {
     PENDING,
-    COMPLETED
+    COMPLETED,
+    ROLLBACK_REQUESTED,
+    ROLLBACKED
 }
